@@ -1,7 +1,8 @@
-'use server';
+﻿'use server';
 import { fetchAndExtractPdfText } from "@/lib/langchain";
 import { generateSummaryFromOpenAI } from "@/lib/openai";
 import { generateSummaryFromGemini } from "@/lib/geminiai";
+import { generateSummaryFromGroq } from "@/lib/groq";
 import {auth} from'@clerk/nextjs/server';
 import {getDbConnection} from '@/lib/db';
 import {formatFileNameAsTitle} from '@/utils/format-utils';
@@ -55,26 +56,32 @@ export async function generatePdfSummary(
         console.log({pdfText});
          
         let summary;
-        // try {
-        //     summary = await generateSummaryFromOpenAI(pdfText);
-        //     console.log({summary});
-        // } catch (error) {
-        //     console.log(error);
-        //     // call gemini
-        //     if (error instanceof Error && error.message === 'RATE_LIMIT_EXCEEDED'){
-                try{
+        
+        // Try Groq first (free and fast)
+        try {
+            summary = await generateSummaryFromGroq(pdfText);
+            console.log('Groq summary generated:', {summary});
+        } catch (groqError) {
+            console.log('Groq failed, trying OpenAI:', groqError);
+            
+            // Fallback to OpenAI
+            try {
+                summary = await generateSummaryFromOpenAI(pdfText);
+                console.log('OpenAI summary generated:', {summary});
+            } catch (openaiError) {
+                console.log('OpenAI failed, trying Gemini:', openaiError);
+                
+                // Final fallback to Gemini
+                try {
                     summary = await generateSummaryFromGemini(pdfText);
+                    console.log('Gemini summary generated:', {summary});
                 } catch (geminiError) {
-                    console.error(
-                        'Gemini API failed after OpenAI quote exceeded',
-                        geminiError
-                    );
-                    throw new Error(
-                        'Failed to generate summary with available AI providers'
-                    );
+                    console.error('All AI providers failed:', {groqError, openaiError, geminiError});
+                    throw new Error('All AI providers failed to generate summary');
                 }
-        //     }
-        // }
+            }
+        }
+        
         if(!summary){
             return{
                 success:false,
