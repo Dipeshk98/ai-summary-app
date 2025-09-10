@@ -33,7 +33,7 @@ CREATE TABLE payments (
     status VARCHAR(255) NOT NULL,
     stripe_payment_id VARCHAR(255) UNIQUE NOT NULL,
     price_id VARCHAR(255) NOT NULL,
-    user_email VARCHAR(255) NOT NULL REFERENCES users(email) ON DELETE CASCADE,
+    user_email VARCHAR(255) NOT NULL REFERENCES users(email),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -45,9 +45,9 @@ BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE 'plpgsql';
 
--- Add triggers to update updated_at automatically
+-- Add triggers to update updated_at 
 CREATE TRIGGER update_users_updated_at
     BEFORE UPDATE ON users
     FOR EACH ROW
@@ -62,3 +62,4 @@ CREATE TRIGGER update_payments_updated_at
     BEFORE UPDATE ON payments
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+ 

@@ -1,4 +1,5 @@
-export function formatFileNameAsTitle(fileName:string){
+export function formatFileNameAsTitle(fileName:string) :
+ string{
     //remove the extension and replace special characters with spaces
     const withoutExtension=fileName.replace(/\.[^/.]+$/, '');
     const withSpaces=withoutExtension

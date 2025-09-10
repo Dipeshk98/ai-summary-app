@@ -21,7 +21,7 @@ const SummaryHeader=({
             <h3 className="text-base xl:text-lg font-semibold text-gray-900 truncate w-4/5">
             {title}
             </h3>
-            <p className="text-sm text-gray-500">{formatDistanceToNow(new Date(createdAt), { addSuffix: true })}</p>
+            <p className="text-sm text-gray-500">{new Date(createdAt).toLocaleDateString() }</p>
             </div>
             </div>
 );
